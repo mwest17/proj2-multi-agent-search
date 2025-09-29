@@ -238,8 +238,53 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluation_function
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.miniMax(game_state, 0, self.depth)[1]
+
+
+    def maxNode(self, state: GameState, curAgent: int, depth: int, alpha: int, beta: int):
+        maxState = (float('-inf'), Directions.STOP)
+        nextAgent = (curAgent + 1) % state.num_agents()
+        
+        for act in state.get_legal_actions(curAgent):
+            successor = state.generate_successor(curAgent, act)
+            mmNode = self.miniMax(successor, nextAgent, depth, alpha, beta)
+            if maxState[0] < mmNode[0]: # Find and store max node
+                maxState = (mmNode[0], act) 
+            
+            # Prune
+            if maxState[0] > beta: return maxState
+            alpha = max(alpha, maxState[0])
+
+        # Return tuple of path cost and action needed to reach it
+        return maxState 
+
+
+    def minNode(self, state: GameState, curAgent: int, depth: int, alpha: int, beta: int):
+        minValue = float('inf')
+        nextAgent = (curAgent + 1) % state.num_agents()
+
+        for act in state.get_legal_actions(curAgent):
+            successor = state.generate_successor(curAgent, act)
+            minValue = min(minValue, self.miniMax(successor, nextAgent, depth, alpha, beta)[0])
+            
+            # Prune
+            if minValue < alpha: return (minValue, Directions.STOP)
+            beta = min(beta, minValue)
+        
+        # We don't care about what moves the ghosts make
+        return (minValue, Directions.STOP)
+
+
+    def miniMax(self, state: GameState, curAgent: int, depth: int, alpha=float('-inf'), beta=float('inf')):
+        if (depth == 0 and curAgent == 0) or (state.is_win() or state.is_lose()): 
+            # Searched as far as we can
+            return (self.evaluation_function(state), Directions.STOP)
+        if curAgent == 0: # Pacman's Turn
+            return self.maxNode(state, curAgent, depth - 1, alpha, beta)
+        else: # Ghost Turn
+            return self.minNode(state, curAgent, depth, alpha, beta)
+
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
