@@ -95,6 +95,7 @@ class ReflexAgent(Agent):
         """
         Our score is going to depend of three factors: 
         1)the successors gamestate score
+            1.a penalty for staying still
         2) food location
         3) ghosts position
         """
@@ -102,6 +103,11 @@ class ReflexAgent(Agent):
 
         "1) Start with score from the succesors game state"
         score = successor_game_state.get_score()
+
+        "1 a) penalize if the action is staying in the same place"
+
+        if (action == Directions.STOP):
+            score -= 5
 
         "2) Get food positions from the succesors game state"
         food_list = new_food.as_list()
