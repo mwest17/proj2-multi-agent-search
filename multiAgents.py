@@ -91,7 +91,47 @@ class ReflexAgent(Agent):
         new_scared_times = [ghost_state.scared_timer for ghost_state in new_ghost_states]
 
         "*** YOUR CODE HERE ***"
-        return successor_game_state.get_score()
+
+        """
+        Our score is going to depend of three factors: 
+        1)the successors gamestate score
+        2) food location
+        3) ghosts position
+        """
+
+
+        "1) Start with score from the succesors game state"
+        score = successor_game_state.get_score()
+
+        "2) Get food positions from the succesors game state"
+        food_list = new_food.as_list()
+        if (len(food_list) > 0):
+            "Calculate distances to all food pellets"
+            food_distances = [manhattan_distance(new_pos,pellet_pos) for pellet_pos in food_list] 
+            min_dist= min(food_distances)
+            """
+            To make the reward proportional to the distance to the closest pellet, we will use the formula:
+
+            1/(manhattan distance to pellet)
+            in this way, a closest pellet 1 distance away will receive 1 point while one 10 units away will just receive 0.1
+            """
+            score = score + (1 / min_dist)
+
+        "3) Get ghost positions"
+        for ghost in new_ghost_states:
+            " method .get_position is a chain where Agent state calls configuration which stores the coordinates"
+            dist_ghost = manhattan_distance(new_pos, ghost.get_position())
+            "we only apply the penalty if distance to ghost is <=2 and the ghost is not scared"
+            if dist_ghost <= 2 and ghost.scared_timer == 0:
+                score -= 100
+
+
+            
+
+
+
+        
+        return score
 
 def score_evaluation_function(current_game_state: GameState):
     """
