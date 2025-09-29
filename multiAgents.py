@@ -190,44 +190,42 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         
-        return miniMax(game_state, 0, self.depth, self.evaluation_function)[1]
+        return self.miniMax(game_state, 0, self.depth)[1]
 
 
-
-def maxNode(state: GameState, curAgent: int, depth: int, evalFunc):
-    maxState = (float('-inf'), Directions.STOP)
-    nextAgent = (curAgent + 1) % state.num_agents()
-    
-    for act in state.get_legal_actions(curAgent):
-        successor = state.generate_successor(curAgent, act)
-        mmNode = miniMax(successor, nextAgent, depth, evalFunc)
-        if maxState[0] < mmNode[0]:
-            maxState = (mmNode[0], act) 
-    # Return tuple of path cost and action needed to reach it
-    return maxState 
-
-
-# What about when ghost dies??????????
-def minNode(state: GameState, curAgent: int, depth: int, evalFunc):
-    minValue = float('inf')
-    nextAgent = (curAgent + 1) % state.num_agents()
-
-    for act in state.get_legal_actions(curAgent):
-        successor = state.generate_successor(curAgent, act)
-        minValue = min(minValue, miniMax(successor, nextAgent, depth, evalFunc)[0])
-    
-    # We don't care about what moves the ghosts make
-    return (minValue, Directions.STOP)
+    def maxNode(self, state: GameState, curAgent: int, depth: int):
+        maxState = (float('-inf'), Directions.STOP)
+        nextAgent = (curAgent + 1) % state.num_agents()
+        
+        for act in state.get_legal_actions(curAgent):
+            successor = state.generate_successor(curAgent, act)
+            mmNode = self.miniMax(successor, nextAgent, depth)
+            if maxState[0] < mmNode[0]:
+                maxState = (mmNode[0], act) 
+        # Return tuple of path cost and action needed to reach it
+        return maxState 
 
 
-def miniMax(state: GameState, curAgent: int, depth: int, evalFunc):
-    if (depth == 0 and curAgent == 0) or (state.is_win() or state.is_lose()): 
-        # Searched as far as we can
-        return (evalFunc(state), Directions.STOP)
-    if curAgent == 0: # Pacman's Turn
-        return maxNode(state, curAgent, depth - 1, evalFunc)
-    else: # Ghost Turn
-        return minNode(state, curAgent, depth, evalFunc)
+    def minNode(self, state: GameState, curAgent: int, depth: int):
+        minValue = float('inf')
+        nextAgent = (curAgent + 1) % state.num_agents()
+
+        for act in state.get_legal_actions(curAgent):
+            successor = state.generate_successor(curAgent, act)
+            minValue = min(minValue, self.miniMax(successor, nextAgent, depth)[0])
+        
+        # We don't care about what moves the ghosts make
+        return (minValue, Directions.STOP)
+
+
+    def miniMax(self, state: GameState, curAgent: int, depth: int):
+        if (depth == 0 and curAgent == 0) or (state.is_win() or state.is_lose()): 
+            # Searched as far as we can
+            return (self.evaluation_function(state), Directions.STOP)
+        if curAgent == 0: # Pacman's Turn
+            return self.maxNode(state, curAgent, depth - 1)
+        else: # Ghost Turn
+            return self.minNode(state, curAgent, depth)
 
 
 
