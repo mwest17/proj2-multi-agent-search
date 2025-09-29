@@ -90,8 +90,6 @@ class ReflexAgent(Agent):
         new_ghost_states = successor_game_state.get_ghost_states()
         new_scared_times = [ghost_state.scared_timer for ghost_state in new_ghost_states]
 
-        "*** YOUR CODE HERE ***"
-
         """
         Our score is going to depend of three factors: 
         1)the successors gamestate score
@@ -121,7 +119,7 @@ class ReflexAgent(Agent):
             1/(manhattan distance to pellet)
             in this way, a closest pellet 1 distance away will receive 1 point while one 10 units away will just receive 0.1
             """
-            score = score + (1 / min_dist)
+            score = score + (1 / min_dist) # Is this weighting food too little?
 
         "3) Get ghost positions"
         for ghost in new_ghost_states:
@@ -131,12 +129,6 @@ class ReflexAgent(Agent):
             if dist_ghost <= 2 and ghost.scared_timer == 0:
                 score -= 100
 
-
-            
-
-
-
-        
         return score
 
 def score_evaluation_function(current_game_state: GameState):
@@ -197,8 +189,47 @@ class MinimaxAgent(MultiAgentSearchAgent):
         game_state.is_lose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        return miniMax(game_state, 0, self.depth, self.evaluation_function)[1]
+
+
+
+def maxNode(state: GameState, curAgent: int, depth: int, evalFunc):
+    maxState = (float('-inf'), Directions.STOP)
+    nextAgent = (curAgent + 1) % state.num_agents()
+    
+    for act in state.get_legal_actions(curAgent):
+        successor = state.generate_successor(curAgent, act)
+        mmNode = miniMax(successor, nextAgent, depth, evalFunc)
+        if maxState[0] < mmNode[0]:
+            maxState = (mmNode[0], act) 
+    # Return tuple of path cost and action needed to reach it
+    return maxState 
+
+
+# What about when ghost dies??????????
+def minNode(state: GameState, curAgent: int, depth: int, evalFunc):
+    minValue = float('inf')
+    nextAgent = (curAgent + 1) % state.num_agents()
+
+    for act in state.get_legal_actions(curAgent):
+        successor = state.generate_successor(curAgent, act)
+        minValue = min(minValue, miniMax(successor, nextAgent, depth, evalFunc)[0])
+    
+    # We don't care about what moves the ghosts make
+    return (minValue, Directions.STOP)
+
+
+def miniMax(state: GameState, curAgent: int, depth: int, evalFunc):
+    if (depth == 0 and curAgent == 0) or (state.is_win() or state.is_lose()): 
+        # Searched as far as we can
+        return (evalFunc(state), Directions.STOP)
+    if curAgent == 0: # Pacman's Turn
+        return maxNode(state, curAgent, depth - 1, evalFunc)
+    else: # Ghost Turn
+        return minNode(state, curAgent, depth, evalFunc)
+
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
