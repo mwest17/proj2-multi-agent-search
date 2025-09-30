@@ -298,8 +298,45 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.expectiMax(game_state, 0, self.depth)[1]
+
+    def maxNode(self, state: GameState, curAgent: int, depth: int):
+        maxState = (float('-inf'), Directions.STOP)
+        nextAgent = (curAgent + 1) % state.num_agents()
+        
+        for act in state.get_legal_actions(curAgent):
+            successor = state.generate_successor(curAgent, act)
+            mmNode = self.expectiMax(successor, nextAgent, depth)
+            if maxState[0] < mmNode[0]:
+                maxState = (mmNode[0], act) 
+        # Return tuple of path cost and action needed to reach it
+        return maxState 
+
+    
+    def chanceNode(self, state: GameState, curAgent: int, depth: int):
+        # If ghost will choose randomly between all, then expected value is just average, since all prob is the same
+        totalSum = 0
+        nextAgent = (curAgent + 1) % state.num_agents()
+
+        actions = state.get_legal_actions(curAgent)
+        for act in actions:
+            successor = state.generate_successor(curAgent, act)
+            mmNode = self.expectiMax(successor, nextAgent, depth)
+            totalSum += mmNode[0]
+
+        # Return average score of all possible actions
+        return (totalSum / len(actions), Directions.STOP)
+
+
+    def expectiMax(self, state: GameState, curAgent: int, depth: int):
+        if (depth == 0 and curAgent == 0) or (state.is_win() or state.is_lose()): 
+            # Searched as far as we can
+            return (self.evaluation_function(state), Directions.STOP)
+        if curAgent == 0: # Pacman's Turn
+            return self.maxNode(state, curAgent, depth - 1)
+        else: # Ghost Turn
+            return self.chanceNode(state, curAgent, depth)
+
 
 def better_evaluation_function(current_game_state: GameState):
     """
