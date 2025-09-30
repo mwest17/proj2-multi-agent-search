@@ -343,10 +343,52 @@ def better_evaluation_function(current_game_state: GameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION:
+
+    Score depends on three factors: 
+    1) Distance to nearest ghost( penalty if near a non-scared ghost, boost if near a scared ghost)
+    2) # of pellets and power pellets in the board, which encourages progression
+    3) Distance to the nearest food pellet
+
+
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    pac_pos = current_game_state.get_pacman_position()
+    food_list = current_game_state.get_food().as_list()
+    new_ghost_states = current_game_state.get_ghost_states()
+    capsules = current_game_state.get_capsules()
+    
+
+    score = current_game_state.get_score()
+
+    for ghost in new_ghost_states:
+            " method .get_position is a chain where Agent state calls configuration which stores the coordinates"
+            dist_ghost = manhattan_distance(pac_pos, ghost.get_position())
+            "we only apply the penalty if distance to ghost is <=2 and the ghost is not scared"
+            if dist_ghost <= 2 and ghost.scared_timer == 0:
+                score -= 100
+            "persecute the nearest scared ghost"
+            if dist_ghost <= 5 and ghost.scared_timer == 3:
+                score += 100
+    
+    "penalize for every pellet left"
+    score -= 10* len(food_list)
+    "penalize even more for every power pellet left"
+    score -= 100 * len(capsules)
+
+
+
+    if (len(food_list) > 0):
+        "Calculate distances to all food pellets"
+        food_distances = [manhattan_distance(pac_pos,pellet_pos) for pellet_pos in food_list] 
+        min_dist= min(food_distances)
+        score = score + 10* (1 / min_dist) 
+
+    
+    return score
+
+    
 
 # Abbreviation
 better = better_evaluation_function
