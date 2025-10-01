@@ -369,7 +369,7 @@ def better_evaluation_function(current_game_state: GameState):
             if dist_ghost <= 2 and ghost.scared_timer == 0:
                 score -= 100
             "persecute the nearest scared ghost"
-            if dist_ghost <= 5 and ghost.scared_timer == 3:
+            if dist_ghost <= 5 and ghost.scared_timer >= 2:
                 score += 100
     
     "penalize for every pellet left"
