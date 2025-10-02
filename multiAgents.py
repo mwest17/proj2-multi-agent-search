@@ -119,7 +119,7 @@ class ReflexAgent(Agent):
             1/(manhattan distance to pellet)
             in this way, a closest pellet 1 distance away will receive 1 point while one 10 units away will just receive 0.1
             """
-            score = score + (1 / min_dist) # Is this weighting food too little?
+            score = score + (1 / min_dist) 
 
         "3) Get ghost positions"
         for ghost in new_ghost_states:
